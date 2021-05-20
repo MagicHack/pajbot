@@ -2,6 +2,10 @@ from typing import Dict, Optional, Any
 
 import logging
 
+# For rand ascii
+import urllib.request
+import random
+
 from pajbot.managers.adminlog import AdminLogManager
 from pajbot.models.command import Command
 from pajbot.models.command import CommandExample
@@ -105,6 +109,15 @@ class StreamUpdateModule(BaseModule):
             bot.say("You must specify a title to update to!")
             return
 
+        # Get random ascii, add to title change watcher when it made ;)
+        asciiurl = 'https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii'
+        response = urllib.request.urlopen(asciiurl)
+        data = response.read()
+        text = data.decode('utf-8')
+        lines = [line for line in text.splitlines() if line.strip() != '']
+        if len(lines) > 0:
+            bot.say(lines[random.randint(0, len(lines) - 1)])
+            
         return self.generic_update(bot, source, message, "title", {"title": message})
 
     def load_commands(self, **options):
