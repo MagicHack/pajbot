@@ -824,6 +824,11 @@ class Bot:
                 self.timeout_login(login, 3600, reason="Bad username")
                 return True
 
+        if self.streamer == "pepto__bismol":
+            if "sunephef" in login:
+                self.timeout(login, 1, reason="sunephef")
+                return True
+
         with DBManager.create_session_scope(expire_on_commit=False) as db_session:
             source = User.from_basics(db_session, UserBasics(id, login, name))
             res = HandlerManager.trigger("on_pubmsg", source=source, message=event.arguments[0], tags=tags)
