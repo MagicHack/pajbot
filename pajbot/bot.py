@@ -828,8 +828,8 @@ class Bot:
             if "sunephef" in login:
                 self.timeout_login(login, 1, reason="sunephef :tf:")
                 return True
-            if "qfm23" in login:
-                self.timeout_login(login, 1, reason="qfm23 :tf:")
+            if "sunwithnofaceclap" in login:
+                self.timeout_login(login, 1, reason="sunephef :tf:")
                 return True
 
         with DBManager.create_session_scope(expire_on_commit=False) as db_session:
