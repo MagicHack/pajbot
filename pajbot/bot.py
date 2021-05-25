@@ -826,10 +826,10 @@ class Bot:
 
         if self.streamer == "pepto__bismol":
             if "sunephef" in login:
-                self.timeout_login(login, 1, reason="sunephef NaM")
+                self.timeout_login(login, 1, reason="NaM silence weeb")
                 return True
             if "sunwithnofaceclap" in login:
-                self.timeout_login(login, 1, reason="sunephef NaM")
+                self.timeout_login(login, 1, reason="NaM silence weeb")
                 return True
 
         with DBManager.create_session_scope(expire_on_commit=False) as db_session:
