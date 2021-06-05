@@ -146,9 +146,9 @@ class SEVENTVEmoteManager(GenericChannelEmoteManager):
     friendly_name = "7TV"
 
     def __init__(self):
-        from pajbot.apiwrappers.seventv import SEVENTVAPI
+        from pajbot.apiwrappers.seventv import SevenTVAPI
 
-        self.api = SEVENTVAPI(RedisManager.get())
+        self.api = SevenTVAPI(RedisManager.get())
         super().__init__()
 
 
