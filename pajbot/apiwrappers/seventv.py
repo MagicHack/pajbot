@@ -20,8 +20,12 @@ class SEVENTVAPI(BaseAPI):
                     code=emote_data["name"],
                     provider="7tv",
                     id=emote_id,
-                    urls={"1": get_url(emote_id, "1"), "2": get_url(emote_id, "2"), "3": get_url(emote_id, "3"),
-                          "4": get_url(emote_id, "4")},
+                    urls={
+                        "1": get_url(emote_id, "1"),
+                        "2": get_url(emote_id, "2"),
+                        "3": get_url(emote_id, "3"),
+                        "4": get_url(emote_id, "4"),
+                    },
                 )
             )
         return emotes
@@ -56,7 +60,9 @@ class SEVENTVAPI(BaseAPI):
                     name
                 }}
             }}
-        }}""".format(channel_name=channel_name)
+        }}""".format(
+            channel_name=channel_name
+        )
 
         params = {"query": query_string}
         response = self.post("gql", json=params)
