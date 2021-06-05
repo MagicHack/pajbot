@@ -32,16 +32,6 @@ class SEVENTVAPI(BaseAPI):
             search_emotes(query: "", globalState: "only", limit: 150, pageSize: 150) {
                 id
                 name
-                provider
-                provider_id
-                visibility
-                mime
-                owner {
-                    id
-                    display_name
-                    login
-                    twitch_id
-                }
             }
         }"""
         params = {"query": query_string}
@@ -64,16 +54,6 @@ class SEVENTVAPI(BaseAPI):
                 emotes {{
                     id
                     name
-                    provider
-                    provider_id
-                    visibility
-                    mime
-                    owner {{
-                        id
-                        display_name
-                        login
-                        twitch_id
-                    }}
                 }}
             }}
         }}""".format(channel_name=channel_name)
