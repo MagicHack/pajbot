@@ -117,19 +117,12 @@ class TopModule(BaseModule):
 
         top_emotes = {
             emote: emote_count
-            for emote, emote_count
-            in sorted(
-                redis.zscan_iter(f"{streamer}:emotes:count"),
-                key=lambda e_ecount_pair: e_ecount_pair[1],
-                reverse=True
+            for emote, emote_count in sorted(
+                redis.zscan_iter(f"{streamer}:emotes:count"), key=lambda e_ecount_pair: e_ecount_pair[1], reverse=True
             )[:num_emotes]
         }
         if top_emotes:
-            top_list_str = ", ".join(
-                f"{emote} ({emote_count:,.0f})"
-                for emote, emote_count
-                in top_emotes.items()
-            )
+            top_list_str = ", ".join(f"{emote} ({emote_count:,.0f})" for emote, emote_count in top_emotes.items())
             bot.say(f"Top {num_emotes} emotes: {top_list_str}")
         else:
             bot.say("No emote data available")
