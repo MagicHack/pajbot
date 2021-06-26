@@ -81,12 +81,21 @@ class SubAlertModule(BaseModule):
         ),
         ModuleSetting(
             key="gift_upgrade",
-            label="Updgraded gift sub chat message | Available arguments: {username}",
+            label="Updgraded gift sub chat message. Leave empty to disable | Available arguments: {username}",
             type="text",
             required=True,
             placeholder="Thank you for upgrading your gift sub {username}! PogChamp <3",
             default="Thank you for upgrading your gift sub {username}! PogChamp <3",
-            constraints={"min_str_len": 10, "max_str_len": 400},
+            constraints={"max_str_len": 400},
+        ),
+        ModuleSetting(
+            key="extend_sub",
+            label="Chat message for users that extend their sub (subtember-related). Leave empty to disable | Available arguments: {username}",
+            type="text",
+            required=True,
+            placeholder="Thank you for extending your sub {username}! PogChamp",
+            default="Thank you for extending your sub {username}! PogChamp",
+            constraints={"max_str_len": 400},
         ),
         ModuleSetting(
             key="substreak_string",
@@ -133,12 +142,20 @@ class SubAlertModule(BaseModule):
         ),
         ModuleSetting(
             key="gift_upgrade_whisper",
-            label="Whisper message for upgraded gift subs | Available arguments: {username}",
+            label="Whisper message for upgraded gift subs. Leave empty to disable | Available arguments: {username}",
             type="text",
             required=True,
             placeholder="Thank you for upgrading your gift sub {username}! PogChamp <3",
-            default="Thank you for upgrading your gift sub {username}! PogChamp <3",
-            constraints={"min_str_len": 10, "max_str_len": 400},
+            default="",
+        ),
+        ModuleSetting(
+            key="extend_sub_whisper",
+            label="Whisper message for users that extend their sub (subtember-related). Leave empty to disable | Available arguments: {username}",
+            type="text",
+            required=True,
+            placeholder="Thank you for extending your sub {username}! PogChamp",
+            default="",
+            constraints={"max_str_len": 400},
         ),
         ModuleSetting(
             key="grant_points_on_sub",
@@ -232,15 +249,27 @@ class SubAlertModule(BaseModule):
             )
 
     def on_gift_upgrade(self, user):
-        if self.settings["chat_message"] is True:
+        if self.settings["gift_upgrade"] != "":
             self.bot.say(self.settings["gift_upgrade"].format(user=user))
 
-        if self.settings["whisper_message"] is True:
+        if self.settings["gift_upgrade_whisper"] != "":
             self.bot.execute_delayed(
                 self.settings["whisper_after"],
                 self.bot.whisper,
                 user,
                 self.settings["gift_upgrade_whisper"].format(user=user),
+            )
+
+    def on_extend_sub(self, user):
+        if self.settings["extend_sub"] != "":
+            self.bot.say(self.settings["extend_sub"].format(user=user))
+
+        if self.settings["extend_sub_whisper"] != "":
+            self.bot.execute_delayed(
+                self.settings["whisper_after"],
+                self.bot.whisper,
+                user,
+                self.settings["extend_sub_whisper"].format(user=user),
             )
 
     def on_usernotice(self, source, tags, **rest):
@@ -313,6 +342,8 @@ class SubAlertModule(BaseModule):
             HandlerManager.trigger("on_user_sub", user=source)
         elif tags["msg-id"] == "giftpaidupgrade":
             self.on_gift_upgrade(source)
+        elif tags["msg-id"] == "extendsub":
+            self.on_extend_sub(source)
         else:
             log.debug(f"Unhandled msg-id: {tags['msg-id']} - tags: {tags}")
 
