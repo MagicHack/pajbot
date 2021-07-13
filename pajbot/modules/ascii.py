@@ -31,7 +31,7 @@ class AsciiProtectionModule(BaseModule):
             required=True,
             placeholder="",
             default=70,
-            constraints={"min_value": 20, "max_value": 1000},
+            constraints={"min_value": 20, "max_value": 500},
         ),
         ModuleSetting(
             key="moderation_action",
