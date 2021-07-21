@@ -854,7 +854,7 @@ class Bot:
 
         if self.streamer == "pepto__bismol":
             if "sunephef" in login:
-                if random.randint(1, 3) == 1:
+                if random.randint(1, 10) != 1:
                     self.timeout_login(login, 1, reason="NaM silence weeb")
                 return True
             if "sunwithnofaceclap" in login:
