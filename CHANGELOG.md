@@ -4,6 +4,13 @@
 
 Remember to bring your dependencies up to date with `./scripts/venvinstall.sh` when updating to this version!
 
+- Minor: Added optional warning support to the actionchecker module. (#1362)
+- Minor: Added optional warning support to the casechecker module. (#1365)
+- Minor: Added optional warning support to the emote_limit module. (#1366)
+- Minor: Added optional warning support to the emote_timeout module. (#1367)
+- Minor: Added optional warning support to the repspam module. (#1370)
+- Minor: Added optional warning support to the linkchecker module. (#1368)
+- Minor: Added option to disable warnings in the maxmsglength module. (#1369)
 - Minor: Added option to disable warnings in the ASCII Protection module. (#1361)
 - Minor: Changed the timeout length limits for the ASCII Protection module from [30s,1hr] to [1s,2w]. (#1353)
 - Minor: Changed the timeout length limits for the Emote Limit module from [3s,1hr] to [1s,2w]. (#1355)
@@ -36,6 +43,7 @@ Remember to bring your dependencies up to date with `./scripts/venvinstall.sh` w
 - Minor: Increased the maximum point/token limits for the Show Emote sub-module to 1000000. (#1334)
 - Bugfix: Corrected wrong usage examples for editing command aliases. (#1325)
 - Bugfix: Users with level > 2000 are now also shown as admins on the web moderators page. (#1324, #1326)
+- Bugfix: Pyramid parser did not handle double spaces in messages correctly. (#1374)
 
 ## v1.53
 
