@@ -852,15 +852,6 @@ class Bot:
                 self.timeout_login(login, 3600, reason="Bad username")
                 return True
 
-        if self.streamer == "pepto__bismol":
-            if "sunephef" in login:
-                if random.randint(1, 10) != 1:
-                    self.timeout_login(login, 1, reason="NaM silence weeb")
-                return True
-            if "sunwithnofaceclap" in login:
-                self.timeout_login(login, 1, reason="NaM silence weeb, alt detected MODS")
-                return True
-
         with DBManager.create_session_scope(expire_on_commit=False) as db_session:
             source = User.from_basics(db_session, UserBasics(id, login, name))
 
