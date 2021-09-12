@@ -646,6 +646,8 @@ class Bot:
             self.irc.whisper(user.login, message)
         if self.whisper_output_mode == WhisperOutputMode.CHAT:
             self.privmsg(f"{user}, {message}")
+        if self.whisper_output_mode == WhisperOutputMode.CONTROL:
+            self.privmsg(f"{user}, {message}", self.config["main"].get("control_hub", None))
         elif self.whisper_output_mode == WhisperOutputMode.DISABLED:
             log.debug(f'Whisper "{message}" to user "{user}" was not sent (due to config setting)')
 
@@ -659,18 +661,35 @@ class Bot:
 
     def send_message_to_user(self, user, message, event, method="say"):
         if method == "say":
-            self.say(f"@{user.name}, {lowercase_first_letter(message)}")
+            self.say(f"@{user.name}, {message}")
         elif method == "whisper":
             self.whisper(user, message)
         elif method == "me":
             self.me(message)
         elif method == "reply":
             if event.type in ["action", "pubmsg"]:
-                self.say(f"@{user.name}, {lowercase_first_letter(message)}")
+                msg_id = next(tag["value"] for tag in event.tags if tag["key"] == "id")
+                self.reply(msg_id, message)
             elif event.type == "whisper":
                 self.whisper(user, message)
         else:
             log.warning("Unknown send_message method: %s", method)
+
+    def reply(self, msg_id, message, channel=None):
+        if self.silent:
+            return
+
+        if not message:
+            log.warning("message=None passed to Bot::reply()")
+            return
+
+        if not channel:
+            channel = self.channel
+
+        message = utils.clean_up_message(message)
+        message = f"@reply-parent-msg-id={msg_id} PRIVMSG {channel} :{message}"
+
+        self.irc.send_raw(message[:510])
 
     def say(self, message, channel=None):
         if message is None:
@@ -1048,10 +1067,6 @@ def _filter_strftime(var: Any, args: List[str]) -> Any:
 
 def _filter_urlencode(var: Any, args: List[str]) -> Any:
     return urllib.parse.urlencode({"x": var})[2:]
-
-
-def lowercase_first_letter(s):
-    return s[:1].lower() + s[1:] if s else ""
 
 
 def _filter_add(var: Any, args: List[str]) -> Any:
