@@ -646,6 +646,8 @@ class Bot:
             self.irc.whisper(user.login, message)
         if self.whisper_output_mode == WhisperOutputMode.CHAT:
             self.privmsg(f"{user}, {message}")
+        if self.whisper_output_mode == WhisperOutputMode.CONTROL:
+            self.privmsg(f"{user}, {message}", self.config["main"].get("control_hub", None))
         elif self.whisper_output_mode == WhisperOutputMode.DISABLED:
             log.debug(f'Whisper "{message}" to user "{user}" was not sent (due to config setting)')
 
@@ -654,6 +656,8 @@ class Bot:
             self.irc.whisper(login, message)
         if self.whisper_output_mode == WhisperOutputMode.CHAT:
             self.privmsg(f"{login}, {message}")
+        if self.whisper_output_mode == WhisperOutputMode.CONTROL:
+            self.privmsg(f"{login}, {message}", self.config["main"].get("control_hub", None))
         elif self.whisper_output_mode == WhisperOutputMode.DISABLED:
             log.debug(f'Whisper "{message}" to user "{login}" was not sent (due to config setting)')
 
