@@ -130,18 +130,6 @@ class StreamUpdateModule(BaseModule):
             bot.say("You must specify a title to update to!")
             return
 
-        # Get random ascii, add to title change watcher when it made ;)
-        asciiurl = (
-            "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
-        )
-        response = urllib.request.urlopen(asciiurl)
-        data = response.read()
-        text = data.decode("utf-8")
-        lines = [line for line in text.splitlines() if line.strip() != ""]
-        if len(lines) > 0:
-            bot.say(lines[random.randint(0, len(lines) - 1)])
-
-        return self.generic_update(bot, source, message, "title", {"title": message})
         try:
             self.bot.twitch_helix_api.modify_channel_information(
                 self.bot.streamer_user_id,
@@ -162,6 +150,18 @@ class StreamUpdateModule(BaseModule):
             else:
                 log.exception(f"Unhandled HTTPError when updating to {title}")
             return
+
+        # Get random ascii, add to title change watcher when it made ;)
+        asciiurl = (
+            "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
+        )
+        response = urllib.request.urlopen(asciiurl)
+        data = response.read()
+        text = data.decode("utf-8")
+        lines = [line for line in text.splitlines() if line.strip() != ""]
+
+        if len(lines) > 0:
+            bot.say(lines[random.randint(0, len(lines) - 1)])
 
         log_msg = f'{source} updated the title to "{title}"'
         bot.say(log_msg)
