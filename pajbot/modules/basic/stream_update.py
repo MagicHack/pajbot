@@ -150,11 +150,9 @@ class StreamUpdateModule(BaseModule):
             else:
                 log.exception(f"Unhandled HTTPError when updating to {title}")
             return
-        if bot.streamer_user_id == "613147117": # ron's channel
+        if bot.streamer_user_id == "613147117":  # ron's channel
             # Get random ascii
-            asciiurl = (
-                "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
-            )
+            asciiurl = "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
             response = urllib.request.urlopen(asciiurl)
             data = response.read()
             text = data.decode("utf-8")
