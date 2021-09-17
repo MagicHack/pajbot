@@ -150,18 +150,18 @@ class StreamUpdateModule(BaseModule):
             else:
                 log.exception(f"Unhandled HTTPError when updating to {title}")
             return
+        if bot.streamer_user_id == "613147117": # ron's channel
+            # Get random ascii
+            asciiurl = (
+                "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
+            )
+            response = urllib.request.urlopen(asciiurl)
+            data = response.read()
+            text = data.decode("utf-8")
+            lines = [line for line in text.splitlines() if line.strip() != ""]
 
-        # Get random ascii, add to title change watcher when it made ;)
-        asciiurl = (
-            "https://gist.githubusercontent.com/ron-johnson-kek/27c8b7b0c504d2b73273daed527056c7/raw/Random%2520Ascii"
-        )
-        response = urllib.request.urlopen(asciiurl)
-        data = response.read()
-        text = data.decode("utf-8")
-        lines = [line for line in text.splitlines() if line.strip() != ""]
-
-        if len(lines) > 0:
-            bot.say(lines[random.randint(0, len(lines) - 1)])
+            if len(lines) > 0:
+                bot.say(lines[random.randint(0, len(lines) - 1)])
 
         log_msg = f'{source} updated the title to "{title}"'
         bot.say(log_msg)
