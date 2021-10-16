@@ -23,18 +23,21 @@ log = logging.getLogger(__name__)
 
 
 class ClientProtocol(WebSocketClientProtocol):
+    def __init__(self, manager: PBTwitterManager) -> None:
+        super().__init__()
+
+        self.manager = manager
+
     def onOpen(self) -> None:
-        PBTwitterManager.client = self
+        self.manager.client = self
 
-        log.info("Connected to tweet-provider")
-
-        if PBTwitterManager.tweepy is None:
+        if self.manager.tweepy is None:
             log.warning(
                 "Unable to initialize tweet-provider connection since local twitter credentials are not configured"
             )
             return
 
-        user_ids = [PBTwitterManager.tweepy.get_user(screen_name=e).id for e in PBTwitterManager.relevant_users]
+        user_ids = [self.manager.tweepy.get_user(screen_name=e).id for e in self.manager.relevant_users]
 
         msg = {"type": "set_subscriptions", "data": user_ids}
 
@@ -48,12 +51,12 @@ class ClientProtocol(WebSocketClientProtocol):
         if message["type"] == "tweet":
             tweet = message["data"]
             if (
-                tweet["user"]["screen_name"].lower() in PBTwitterManager.relevant_users
+                tweet["user"]["screen_name"].lower() in self.manager.relevant_users
                 and not tweet["text"].startswith("RT ")
                 and tweet["in_reply_to_screen_name"] is None
             ):
                 tweet_message = tweet_provider_stringify_tweet(tweet)
-                PBTwitterManager.bot.say(f"B) New cool tweet from {tweet['user']['screen_name']}: {tweet_message}")
+                self.manager.bot.say(f"B) New cool tweet from {tweet['user']['screen_name']}: {tweet_message}")
                 log.debug(f"Got tweet: {message['data']}")
         else:
             log.debug(f"Unhandled message from tweet-provider: {message}")
@@ -63,8 +66,16 @@ class ClientProtocol(WebSocketClientProtocol):
 
 
 class ClientFactory(WebSocketClientFactory, ReconnectingClientFactory):
-    protocol = ClientProtocol
     maxDelay = 30
+    manager: Optional[PBTwitterManager] = None
+
+    def buildProtocol(self, addr):
+        if self.manager is None:
+            raise ValueError("ClientFactory's manager not initialized")
+
+        proto = ClientProtocol(self.manager)
+        proto.factory = self
+        return proto
 
     def clientConnectionFailed(self, connector, reason) -> None:
         log.debug(f"Connection failed to PBTwitterManager: {reason}")
@@ -77,9 +88,20 @@ class ClientFactory(WebSocketClientFactory, ReconnectingClientFactory):
 
 class MyStreamListener(tweepy.Stream):
     def __init__(self, bot: Bot):
-        super().__init__(self)
         self.relevant_users: List[str] = []
         self.bot = bot
+
+        if "twitter" not in bot.config:
+            return
+
+        twitter_config = bot.config["twitter"]
+
+        super().__init__(
+            twitter_config["consumer_key"],
+            twitter_config["consumer_secret"],
+            twitter_config["access_token"],
+            twitter_config["access_token_secret"],
+        )
 
     def on_status(self, status: tweepy.models.Status) -> None:
         if (
@@ -209,7 +231,7 @@ class TwitterManager(GenericTwitterManager):
     def __init__(self, bot: Bot) -> None:
         super().__init__(bot)
 
-        self.twitter_stream: Optional[tweepy.Stream] = None
+        self.twitter_stream: Optional[MyStreamListener] = None
 
         if "twitter" not in bot.config:
             return
@@ -221,22 +243,18 @@ class TwitterManager(GenericTwitterManager):
         except:
             log.exception("Twitter authentication failed.")
 
-    def initialize_listener(self) -> None:
-        if self.listener is None:
-
-            self.listener = MyStreamListener(self.bot)
-            self.reload()
-
     def initialize_twitter_stream(self) -> None:
         if self.twitter_stream is None:
-            self.twitter_stream = tweepy.Stream(self.twitter_auth, self.listener, retry_420=3 * 60)
+            self.twitter_stream = MyStreamListener(self.bot)
+            self.listener = self.twitter_stream
+
+            self.reload()
 
     def _run_twitter_stream(self) -> None:
         if self.twitter_client is None:
             log.warn("Unable to run twitter stream: local twitter client not configured")
             return
 
-        self.initialize_listener()
         self.initialize_twitter_stream()
 
         if self.twitter_stream is None:
@@ -246,7 +264,7 @@ class TwitterManager(GenericTwitterManager):
         user_ids = []
         with DBManager.create_session_scope() as db_session:
             for user in db_session.query(TwitterUser):
-                twitter_user = self.twitter_client.get_user(screen_name=user.username)
+                twitter_user: tweepy.User = self.twitter_client.get_user(screen_name=user.username)
                 if twitter_user:
                     user_ids.append(twitter_user.id_str)
 
@@ -254,7 +272,7 @@ class TwitterManager(GenericTwitterManager):
             return
 
         try:
-            self.twitter_stream.filter(follow=user_ids, is_async=False)
+            self.twitter_stream.filter(follow=user_ids, threaded=False)
         except:
             log.exception("Exception caught in twitter stream _run")
 
@@ -279,12 +297,13 @@ class TwitterManager(GenericTwitterManager):
 
 # PBTwitterManager reads live tweets from a pajbot tweet-provider (https://github.com/pajbot/tweet-provider) instead of Twitter's streaming API
 class PBTwitterManager(GenericTwitterManager):
-    relevant_users: List[str] = []
     client: Optional[ClientProtocol] = None
     tweepy: Optional[tweepy.API] = None
 
     def __init__(self, bot: Bot) -> None:
         super().__init__(bot)
+
+        self.relevant_users: List[str] = []
 
         PBTwitterManager.bot = bot
         PBTwitterManager.tweepy = self.twitter_client
@@ -306,6 +325,7 @@ class PBTwitterManager(GenericTwitterManager):
         tweet_provider_protocol = twitter_config.get("tweet_provider_protocol", "ws")
 
         factory = ClientFactory(f"{tweet_provider_protocol}://{tweet_provider_host}:{tweet_provider_port}")
+        factory.manager = self
 
         reactor.connectTCP(tweet_provider_host, tweet_provider_port, factory)  # type:ignore
 
